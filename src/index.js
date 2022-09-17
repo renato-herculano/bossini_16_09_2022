@@ -11,10 +11,11 @@ class App extends React.Component {
       estacao: null,
       data: null,
       icone: null,
+      mensagemDeErro: null,
     };
   }
 
-  obterEstacao(data, latitude) {
+  obterEstacao = (data, latitude) => {
     const ano = data.getFullYear();
     const d1 = new Date(ano, 5, 21);
     const d2 = new Date(ano, 8, 24);
@@ -36,7 +37,7 @@ class App extends React.Component {
     }
 
     return sul ? "outono" : "primavera";
-  }
+  };
 
   icons = {
     verão: "fa-sun",
@@ -45,20 +46,26 @@ class App extends React.Component {
     primavera: "fa-seeding",
   };
 
-  obterLocalizacao() {
-    window.navigator.geolocation.getCurrentPosition((position) => {
-      let data = new Date();
-      let estacao = this.obterEstacao(data, position.coords.latitude);
-      let icone = this.icons[estacao];
-      this.setState({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        data: data.toLocaleString(),
-        estacao: estacao,
-        icone: icone,
-      });
-    });
-  }
+  obterLocalizacao = () => {
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        let data = new Date();
+        let estacao = this.obterEstacao(data, position.coords.latitude);
+        let icone = this.icons[estacao];
+        this.setState({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          data: data.toLocaleString(),
+          estacao: estacao,
+          icone: icone,
+        });
+      },
+      (error) => {
+        console.log(error);
+        this.setState({ mensagemDeErro: "Tente novamente mais tarde" });
+      }
+    );
+  };
 
   render() {
     return (
@@ -71,18 +78,26 @@ class App extends React.Component {
                   className="d-flex align-items-center border rounded mb-2"
                   style={{ height: "6rem" }}
                 >
-                    <i className={`fas fa-5x ${this.state.icone}`}></i>
-                    <p className="w-75 ms-3 text-center fs-1">{`${this.state.estacao}`}</p>
+                  <i className={`fas fa-5x ${this.state.icone}`}></i>
+                  <p className="w-75 ms-3 text-center fs-1">
+                    {this.state.estacao}
+                  </p>
                 </div>
                 <div>
-                    <p className="text-center">
-                        {
-                            this.state.latitude 
-                            ? `Coordenadas: ${this.state.latitude}, ${this.state.lagitude}, Data: ${this.state.data}` 
-                            : `Clique no botão para saber a sua estação climática`
-                        }
-                    </p>
+                  <p className="text-center">
+                    {this.state.latitude
+                      ? `Coordenadas: ${this.state.latitude}, ${this.state.longitude}, Data: ${this.state.data}`
+                      : this.state.mensagemDeErro
+                      ? `${this.state.mensagemDeErro}`
+                      : `Clique no botão para saber a sua estação climática`}
+                  </p>
                 </div>
+                <button
+                  onClick={this.obterLocalizacao}
+                  className="btn btn-outline-primary w-100 mt-2"
+                >
+                  Qual a minha estação?
+                </button>
               </div>
             </div>
           </div>
